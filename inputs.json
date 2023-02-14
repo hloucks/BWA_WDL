@@ -1,0 +1,9 @@
+{
+ "MapReads.fastq": "data/ERR141688.fastq.gz",
+ "MapReads.reference": "chm13v2.0.fa.gz",
+ "MapReads.reference_amb": "chm13.amb",
+ "MapReads.reference_bwt": "chm13.bwt",
+ "MapReads.reference_ann": "chm13.ann",
+ "MapReads.reference_pac": "chm13.pac",
+ "MapReads.reference_sa": "chm13.sa"
+}
