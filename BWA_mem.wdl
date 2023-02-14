@@ -81,7 +81,7 @@ task FastqToBam {
         ln -s ~{reference_sa}
 
         bwa mem -t 20  -c 128 -L 12,12 ~{ref_name} ~{fastq} | samtools view -Sb -@ 2 -O BAM -o ~{fastq_name}.~{ref_name}.bam - 
-        samtools sort ~{fastq_name}.~{ref_name}.bam -o ~{fastq_name}.~{ref_name}.sorted.bam
+        samtools sort ~{fastq_name}.~{ref_name}.bam > ~{fastq_name}.~{ref_name}.sorted.bam
 
         
     >>>
