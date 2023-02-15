@@ -1,0 +1,9 @@
+version 1.2
+workflows:
+  - subclass: WDL
+    primaryDescriptorPath: BWA_mem.wdl
+    testParameterFiles:
+      - inputs.json
+    authors:
+      - name: "Hailey Loucks"
+        email: "hloucks@ucsc.edu"
