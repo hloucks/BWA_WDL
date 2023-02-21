@@ -13,7 +13,7 @@ workflow MapReads{
         String ref_name=basename(sub(reference_amb, "\\.amb", ""))
         String fastq_name=basename(sub(sub(sub(fastq, "\\.gz$", ""), "\\.fastq$", ""), "\\.fa$", "")) #remove the file extension
         
-        Int threadCount=1
+        Int threadCount=20
         Int preemptible = 1
     }
 
@@ -31,12 +31,24 @@ workflow MapReads{
             fastq_name=fastq_name,
             ref_name=ref_name,
 
+            preemptible=preemptible,
+            threadCount=threadCount
+    }
+
+    call SortBam {
+        input:
+            BamFile = FastqToBam.BamFile,
+            fastq_name=fastq_name,
+            ref_name=ref_name,
+
             preemptible=preemptible
+
     }
 
 
     output {
-        File sortedBAM = FastqToBam.BamFile
+        File sortedBAM = SortBam.SortedBam
+        File BamIndex = SortBam.BamIndex
     }
 
     parameter_meta {
@@ -63,6 +75,7 @@ task FastqToBam {
 
         Int memSizeGB = 32
         Int preemptible
+        Int threadCount
     }
     command <<<
 
@@ -80,14 +93,48 @@ task FastqToBam {
         ln -s ~{reference_pac}
         ln -s ~{reference_sa}
 
-        bwa mem -t 20  -c 128 -L 12,12 ~{ref_name} ~{fastq} | samtools view -Sb -@ 2 -O BAM -o ~{fastq_name}.~{ref_name}.bam - 
-        samtools sort ~{fastq_name}.~{ref_name}.bam > ~{fastq_name}.~{ref_name}.sorted.bam
+        bwa mem -t ~{threadCount}  -c 128 -L 12,12 ~{ref_name} ~{fastq} | samtools view -Sb -@ 2 -O BAM -o ~{fastq_name}.~{ref_name}.bam - 
+
+    >>>
+
+    output {
+        File BamFile="~{fastq_name}.~{ref_name}.bam"
+    }
+
+    runtime {
+        memory: memSizeGB + " GB"
+        preemptible : preemptible
+        docker: "quay.io/hdc-workflows/bwa-samtools"
+    }
+}
+
+task SortBam {
+    input {
+        File BamFile
+
+        String fastq_name
+        String ref_name
+
+        Int memSizeGB = 32
+        Int preemptible
+    }
+    command <<<
+
+        #handle potential errors and quit early
+        set -o pipefail
+        set -e
+        set -u
+        set -o xtrace
+
+        samtools sort ~{BamFile} > ~{fastq_name}.~{ref_name}.sorted.bam
+        samtools index ~{fastq_name}.~{ref_name}.sorted.bam
 
         
     >>>
 
     output {
-        File BamFile="~{fastq_name}.~{ref_name}.sorted.bam"
+        File SortedBam="~{fastq_name}.~{ref_name}.sorted.bam"
+        File BamIndex="~{fastq_name}.~{ref_name}.sorted.bam.bai"
     }
 
     runtime {
