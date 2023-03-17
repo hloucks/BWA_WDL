@@ -73,7 +73,7 @@ task FastqToBam {
         String fastq_name
         String ref_name
 
-        Int memSizeGB = 32
+        Int memSizeGB = 48
         Int preemptible
         Int threadCount
     }
@@ -115,7 +115,7 @@ task SortBam {
         String fastq_name
         String ref_name
 
-        Int memSizeGB = 32
+        Int memSizeGB = 48
         Int preemptible
     }
     command <<<
